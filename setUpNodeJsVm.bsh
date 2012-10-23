@@ -1,0 +1,70 @@
+#!/bin/bash
+
+NODEJS_VERSION='v0.8.12'
+NODEJS_NAME="node-$NODEJS_VERSION-linux-x64"
+NODEJS_TAR_FILE_NAME="$NODEJS_NAME.tar.gz"
+
+INSTALL_DIR=`pwd`
+
+USR_BIN_DIR="/usr/bin/"
+
+function installWgetIfNotAvailable {
+  wget --version > /dev/null
+  if [ $? == 0 ]
+  then
+    echo 'wget already available.'
+  else
+    echo 'must install wget.'
+    sudo apt-get install wget
+  fi
+}
+
+function installGitIfNotAvailable {
+  git --version > /dev/null
+  if [ $? == 0 ]
+  then
+    echo 'git already available.'
+  else
+    echo 'must install git.'
+    sudo apt-get install git
+  fi
+}
+
+function installNodeJsIfNotAvailable {
+  NODEJS_INSTALLED_VERSION=`node --version`
+  if [ $? == 0 ]
+  then
+    echo "nodeJs version $NODEJS_INSTALLED_VERSION already available."
+  else
+    echo 'must install nodeJs.'
+    mkdir tmp
+    wget -P ./tmp/ http://nodejs.org/dist/$NODEJS_VERSION/$NODEJS_TAR_FILE_NAME
+    sudo mkdir -p $USR_BIN_DIR
+    sudo tar -x -C $USR_BIN_DIR -zf ./tmp/$NODEJS_TAR_FILE_NAME 
+    cd $USR_BIN_DIR
+    sudo chown -R root:root $NODEJS_NAME
+    sudo ln -s $NODEJS_NAME/bin/node node
+    cd $INSTALL_DIR
+  fi
+}
+
+function installCouchDBIfNotAvailable {
+  couchdb -V > /dev/null
+  if [ $? == 0 ]
+  then
+    echo 'couchdb already available.'
+  else
+    echo 'must install couchdb.'
+    sudo apt-get install couchdb
+  fi
+}
+
+installWgetIfNotAvailable
+
+installGitIfNotAvailable
+
+installNodeJsIfNotAvailable
+
+installCouchDBIfNotAvailable
+
+rm -rf tmp/
